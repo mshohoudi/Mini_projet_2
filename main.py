@@ -226,7 +226,7 @@ def tracer_convergence():
 
     plt.grid(True)
     plt.legend()
-
+    plt.savefig("convergence.png", dpi=300, bbox_inches="tight")
     plt.show()
 
 
@@ -303,6 +303,7 @@ def tracer_temps_execution():
 
     plt.tight_layout()
 
+    plt.savefig("temps_execution.png", dpi=300, bbox_inches="tight")
     plt.show()
 
 
