@@ -1,105 +1,115 @@
-import math
 import numpy as np
 import timeit
-from scipy.integrate import simpson
+from scipy.integrate import simpson, quad
 
 
 # ==========================================
-# 1. Définition des fonctions et solution analytique
+# 1. Définition de la fonction polynomiale
 # ==========================================
-def f_math(x):
-    """Fonction à intégrer (pour Python de base)."""
-    return 1 + math.sin(x) ** 2
 
-
-def f_numpy(x):
-    """Fonction à intégrer (pour NumPy, vectorisée)."""
-    return 1 + np.sin(x) ** 2
-
-
-def solution_analytique(a, b):
-    """Calcule la solution exacte de l'intégrale de manière analytique."""
-
-    def F(x):
-        return 1.5 * x - 0.25 * math.sin(2 * x)
-
-    return F(b) - F(a)
+def calculer_valeur_y(p1, p2, p3, p4, x):
+    """Calcule la valeur du polynôme f(x)."""
+    return p1 + p2 * x + p3 * x**2 + p4 * x**3
 
 
 # ==========================================
-# 2. Implémentation de Simpson avec Python de base
+# 2. Solution analytique avec SciPy quad
 # ==========================================
-def simpson_base(a, b, n):
-    """Intégration numérique par la méthode de Simpson (Python de base)."""
+
+def solution_analytique(p1, p2, p3, p4, a, b):
+    """Calcule la valeur de référence de l'intégrale avec scipy.quad."""
+    resultat, erreur = quad(lambda x: calculer_valeur_y(p1, p2, p3, p4, x), a, b)
+    return resultat
+
+
+# ==========================================
+# 3. Méthode de Simpson avec Python de base
+# ==========================================
+
+def simpson_base(p1, p2, p3, p4, a, b, n):
+    """Intégration numérique par la méthode de Simpson en Python de base."""
     dx = (b - a) / n
     integrale = 0.0
+
     for i in range(n):
         x_a = a + i * dx
         x_b = a + (i + 1) * dx
         x_mid = (x_a + x_b) / 2.0
-        # Application de la formule de Simpson pour chaque segment
-        integrale += (dx / 6.0) * (f_math(x_a) + 4 * f_math(x_mid) + f_math(x_b))
+
+        integrale += (dx / 6.0) * (
+            calculer_valeur_y(p1, p2, p3, p4, x_a)
+            + 4 * calculer_valeur_y(p1, p2, p3, p4, x_mid)
+            + calculer_valeur_y(p1, p2, p3, p4, x_b)
+        )
+
     return integrale
 
 
 # ==========================================
-# 3. Implémentation de Simpson avec NumPy (vectorisée)
+# 4. Méthode de Simpson avec NumPy
 # ==========================================
-def simpson_numpy(a, b, n):
-    """Intégration numérique par la méthode de Simpson (NumPy, sans boucle for)."""
-    x = np.linspace(a, b, n + 1)
-    dx = (b - a) / n
 
-    # Trouver les points médians de tous les segments simultanément
+def simpson_numpy(p1, p2, p3, p4, a, b, n):
+    """Intégration numérique par la méthode de Simpson avec NumPy."""
+    dx = (b - a) / n
+    x = np.linspace(a, b, n + 1)
+
     x_mid = x[:-1] + dx / 2.0
 
-    # Évaluation de la fonction sous forme de tableaux (arrays)
-    f_a = f_numpy(x[:-1])
-    f_mid = f_numpy(x_mid)
-    f_b = f_numpy(x[1:])
+    f_a = calculer_valeur_y(p1, p2, p3, p4, x[:-1])
+    f_mid = calculer_valeur_y(p1, p2, p3, p4, x_mid)
+    f_b = calculer_valeur_y(p1, p2, p3, p4, x[1:])
 
-    # Somme vectorisée
     integrale = np.sum((dx / 6.0) * (f_a + 4 * f_mid + f_b))
+
     return integrale
 
 
 # ==========================================
-# 4. Comparaison avec les méthodes pré-programmées
+# 5. Méthode de Simpson avec SciPy
 # ==========================================
-def simpson_scipy(a, b, n):
-    """Intégration numérique en utilisant la méthode pré-programmée de SciPy."""
+
+def simpson_scipy(p1, p2, p3, p4, a, b, n):
+    """Intégration numérique avec la fonction simpson de SciPy."""
     x = np.linspace(a, b, n + 1)
-    y = f_numpy(x)
-    # Utilisation de scipy.integrate.simpson
+    y = calculer_valeur_y(p1, p2, p3, p4, x)
+
     return simpson(y=y, x=x)
 
 
 # ==========================================
-# 5. Bloc principal pour les tests locaux (optionnel)
+# 6. Bloc principal pour les tests locaux
 # ==========================================
+
 if __name__ == "__main__":
-    # Paramètres de test
-    a = 0.0
-    b = math.pi
+    p1 = 1
+    p2 = 2
+    p3 = 3
+    p4 = 4
+
+    a = 0
+    b = 10
     n = 100
 
-    # Calculs
-    val_exacte = solution_analytique(a, b)
-    res_base = simpson_base(a, b, n)
-    res_numpy = simpson_numpy(a, b, n)
-    res_scipy = simpson_scipy(a, b, n)
+    val_exacte = solution_analytique(p1, p2, p3, p4, a, b)
 
-    # Affichage des erreurs
+    res_base = simpson_base(p1, p2, p3, p4, a, b, n)
+    res_numpy = simpson_numpy(p1, p2, p3, p4, a, b, n)
+    res_scipy = simpson_scipy(p1, p2, p3, p4, a, b, n)
+
     print(f"Valeur exacte : {val_exacte}")
-    print(f"Erreur (Python de base) : {abs(val_exacte - res_base)}")
-    print(f"Erreur (NumPy) : {abs(val_exacte - res_numpy)}")
-    print(f"Erreur (SciPy pré-programmée) : {abs(val_exacte - res_scipy)}")
+    print(f"Résultat Simpson Python : {res_base}")
+    print(f"Résultat Simpson NumPy : {res_numpy}")
+    print(f"Résultat Simpson SciPy : {res_scipy}")
 
-    # Mesure du temps d'exécution
-    t_base = timeit.timeit(lambda: simpson_base(a, b, n), number=1000)
-    t_numpy = timeit.timeit(lambda: simpson_numpy(a, b, n), number=1000)
-    t_scipy = timeit.timeit(lambda: simpson_scipy(a, b, n), number=1000)
+    print(f"\nErreur Python : {abs(val_exacte - res_base)}")
+    print(f"Erreur NumPy : {abs(val_exacte - res_numpy)}")
+    print(f"Erreur SciPy : {abs(val_exacte - res_scipy)}")
 
-    print(f"\nTemps d'exécution (Python de base) : {t_base:.5f} s")
-    print(f"Temps d'exécution (NumPy) : {t_numpy:.5f} s")
-    print(f"Temps d'exécution (SciPy) : {t_scipy:.5f} s")
+    t_base = timeit.timeit(lambda: simpson_base(p1, p2, p3, p4, a, b, n), number=1000)
+    t_numpy = timeit.timeit(lambda: simpson_numpy(p1, p2, p3, p4, a, b, n), number=1000)
+    t_scipy = timeit.timeit(lambda: simpson_scipy(p1, p2, p3, p4, a, b, n), number=1000)
+
+    print(f"\nTemps d'exécution Python : {t_base:.5f} s")
+    print(f"Temps d'exécution NumPy : {t_numpy:.5f} s")
+    print(f"Temps d'exécution SciPy : {t_scipy:.5f} s")
