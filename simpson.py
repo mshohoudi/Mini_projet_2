@@ -17,9 +17,17 @@ def calculer_valeur_y(p1, p2, p3, p4, x):
 # ==========================================
 
 def solution_analytique(p1, p2, p3, p4, a, b):
-    """Calcule la valeur de référence de l'intégrale avec scipy.quad."""
-    resultat, erreur = quad(lambda x: calculer_valeur_y(p1, p2, p3, p4, x), a, b)
-    return resultat
+    """Calcule la solution exacte de l'intégrale avec la primitive analytique."""
+
+    def primitive(x):
+        return (
+            p1 * x
+            + (p2 / 2) * x**2
+            + (p3 / 3) * x**3
+            + (p4 / 4) * x**4
+        )
+
+    return primitive(b) - primitive(a)
 
 
 # ==========================================

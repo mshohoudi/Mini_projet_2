@@ -19,7 +19,8 @@ from scipy.integrate import quad
 from methode_rectangle import (
     rectangle_python_classique,
     rectangle_numpy,
-    calculer_valeur_y
+    calculer_valeur_y,
+    solution_analytique as solution_exacte,
 )
 
 from trapeze import (
@@ -62,20 +63,18 @@ liste_n = [10, 50, 100, 500, 1000, 5000]
 # CALCUL DE LA SOLUTION EXACTE
 # ==========================================================
 
-def solution_exacte(p1, p2, p3, p4, a, b):
-    """
-    Calcule la solution de référence à l'aide
-    de la fonction quad de SciPy.
-    """
+def solution_analytique(p1, p2, p3, p4, a, b):
+    """Calcule la solution exacte de l'intégrale avec la primitive analytique."""
 
-    resultat, erreur = quad(
-        lambda x: calculer_valeur_y(p1, p2, p3, p4, x),
-        a,
-        b
-    )
+    def primitive(x):
+        return (
+            p1 * x
+            + (p2 / 2) * x**2
+            + (p3 / 3) * x**3
+            + (p4 / 4) * x**4
+        )
 
-    return resultat
-
+    return primitive(b) - primitive(a)
 
 # ==========================================================
 # CALCUL DE L'ERREUR ABSOLUE
@@ -226,7 +225,7 @@ def tracer_convergence():
 
     plt.grid(True)
     plt.legend()
-    plt.savefig("convergence.png", dpi=300, bbox_inches="tight")
+    plt.savefig("figures/convergence.png", dpi=300, bbox_inches="tight")
     plt.show()
 
 
@@ -303,7 +302,7 @@ def tracer_temps_execution():
 
     plt.tight_layout()
 
-    plt.savefig("temps_execution.png", dpi=300, bbox_inches="tight")
+    plt.savefig("figures/temps_execution.png", dpi=300, bbox_inches="tight")
     plt.show()
 
 
