@@ -14,7 +14,7 @@ Ce projet consiste à implémenter et comparer différentes méthodes d'intégra
 
 La fonction étudiée est :
 
-f(x) = p1 + p2x + p3x² + p4x³
+$$f(x) = p_1 + p_2x + p_3x^2 + p_4x^3$$
 
 avec :
 
