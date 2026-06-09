@@ -183,4 +183,13 @@ Le programme génère automatiquement :
 
 Ces graphiques permettent d'évaluer visuellement la précision et les performances de chaque méthode.
 
+---
+
+## Conclusion
+
+Ce projet a permis d'implémenter et de comparer trois méthodes classiques d'intégration numérique.
+
+Les résultats démontrent que la méthode de Simpson fournit la meilleure précision pour la fonction étudiée, tandis que l'utilisation de NumPy permet généralement d'améliorer les performances d'exécution.
+
+L'étude met également en évidence l'importance de la convergence et du coût de calcul dans l'évaluation des méthodes numériques.
 

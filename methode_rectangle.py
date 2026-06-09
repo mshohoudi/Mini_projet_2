@@ -1,102 +1,338 @@
+# Bibliothèque permettant de manipuler efficacement
+# les tableaux numériques.
 import numpy as np
-from scipy.integrate import quad
+
+# Bibliothèque permettant de mesurer précisément
+# le temps d'exécution des fonctions.
 import timeit
+
+# Bibliothèque utilisée pour tracer les graphiques
+# de convergence et de temps d'exécution.
 import matplotlib.pyplot as plt
 
-# ==========================================
-# 1. Définition des fonctions et solution analytique
-# ==========================================
+
+# ==========================================================
+# 1. DÉFINITION DU POLYNÔME
+# ==========================================================
+
 def calculer_valeur_y(p1, p2, p3, p4, x):
-    """Calcule la valeur du polynôme f(x)."""
+    """
+    Calcule la valeur du polynôme :
+    f(x) = p1 + p2*x + p3*x² + p4*x³.
+    """
+
     return p1 + p2 * x + p3 * x**2 + p4 * x**3
 
+
+# ==========================================================
+# 2. SOLUTION ANALYTIQUE EXACTE
+# ==========================================================
+
 def solution_analytique(p1, p2, p3, p4, a, b):
-    """Calcule la solution exacte avec la primitive mathématique."""
+    """
+    Calcule la solution exacte de l'intégrale
+    en utilisant la primitive analytique du polynôme.
+
+    La primitive de :
+    f(x) = p1 + p2*x + p3*x² + p4*x³
+
+    est :
+    F(x) = p1*x + (p2/2)*x² + (p3/3)*x³ + (p4/4)*x⁴
+    """
+
     def primitive(x):
-        return p1 * x + (p2 / 2.0) * x**2 + (p3 / 3.0) * x**3 + (p4 / 4.0) * x**4
+        return (
+            p1 * x
+            + (p2 / 2) * x**2
+            + (p3 / 3) * x**3
+            + (p4 / 4) * x**4
+        )
+
     return primitive(b) - primitive(a)
 
-# ==========================================
-# 2. Implémentations de la méthode des rectangles
-# ==========================================
+
+# ==========================================================
+# 3. MÉTHODE DES RECTANGLES - PYTHON DE BASE
+# ==========================================================
+
 def rectangle_python_classique(p1, p2, p3, p4, a, b, n):
-    """Méthode des rectangles avec point milieu (Python de base)."""
+    """
+    Calcule l'intégrale numérique avec la méthode
+    des rectangles en Python de base.
+
+    La fonction est évaluée au centre de chaque segment.
+    """
+
+    # Largeur de chaque segment.
     taille_intervalle = (b - a) / n
+
+    # Variable qui accumule la somme des aires.
     integrale = 0.0
+
+    # Parcours des n rectangles.
     for i in range(n):
-        x_milieu = a + (taille_intervalle / 2.0) + (i * taille_intervalle)
-        integrale += calculer_valeur_y(p1, p2, p3, p4, x_milieu) * taille_intervalle
+
+        # Point milieu du rectangle courant.
+        x_milieu = a + taille_intervalle / 2 + i * taille_intervalle
+
+        # Hauteur du rectangle.
+        hauteur_rectangle = calculer_valeur_y(
+            p1,
+            p2,
+            p3,
+            p4,
+            x_milieu
+        )
+
+        # Aire du rectangle ajoutée à la somme totale.
+        integrale += hauteur_rectangle * taille_intervalle
+
     return integrale
+
+
+# ==========================================================
+# 4. MÉTHODE DES RECTANGLES - VERSION NUMPY
+# ==========================================================
 
 def rectangle_numpy(p1, p2, p3, p4, a, b, n):
-    """Méthode des rectangles avec point milieu (NumPy vectorisé)."""
+    """
+    Calcule l'intégrale numérique avec la méthode
+    des rectangles en utilisant NumPy.
+
+    Cette version est vectorisée afin d'éviter une boucle Python.
+    """
+
+    # Largeur de chaque segment.
     taille_intervalle = (b - a) / n
-    x = np.linspace(a + taille_intervalle / 2.0, b - taille_intervalle / 2.0, n)
-    integrale = np.sum(calculer_valeur_y(p1, p2, p3, p4, x) * taille_intervalle)
+
+    # Création des points milieux de tous les segments.
+    x = np.linspace(
+        a + taille_intervalle / 2,
+        b - taille_intervalle / 2,
+        n
+    )
+
+    # Calcul vectorisé de l'aire totale.
+    integrale = np.sum(
+        calculer_valeur_y(p1, p2, p3, p4, x) * taille_intervalle
+    )
+
     return integrale
 
-# ==========================================
-# 3. Calculs d'erreurs
-# ==========================================
-def erreur_integration(p1, p2, p3, p4, a, b, n):
-    """Calcule l'erreur absolue par rapport à la solution mathématique exacte."""
-    resultat_analytique = solution_analytique(p1, p2, p3, p4, a, b)
-    resultat_numerique = rectangle_numpy(p1, p2, p3, p4, a, b, n)
-    erreur_absolue = abs(resultat_numerique - resultat_analytique)
-    return erreur_absolue
 
-# ==========================================
-# 4. Fonctions de tracé (Graphiques)
-# ==========================================
+# ==========================================================
+# 5. CALCUL DES ERREURS
+# ==========================================================
+
+def erreur_rectangle_python(p1, p2, p3, p4, a, b, n):
+    """
+    Calcule l'erreur absolue de la méthode
+    des rectangles en Python de base.
+    """
+
+    exact = solution_analytique(p1, p2, p3, p4, a, b)
+    numerique = rectangle_python_classique(p1, p2, p3, p4, a, b, n)
+
+    return abs(exact - numerique)
+
+
+def erreur_rectangle_numpy(p1, p2, p3, p4, a, b, n):
+    """
+    Calcule l'erreur absolue de la méthode
+    des rectangles avec NumPy.
+    """
+
+    exact = solution_analytique(p1, p2, p3, p4, a, b)
+    numerique = rectangle_numpy(p1, p2, p3, p4, a, b, n)
+
+    return abs(exact - numerique)
+
+
+# ==========================================================
+# 6. ÉTUDE DE CONVERGENCE
+# ==========================================================
+
 def tracer_courbe_convergence_rectangle(p1, p2, p3, p4, a, b, valeur_n):
-    erreurs = []
-    for i in valeur_n:
-        erreurs.append(erreur_integration(p1, p2, p3, p4, a, b, i))
-    
+    """
+    Trace la convergence de la méthode des rectangles.
+
+    L'objectif est de vérifier que l'erreur diminue lorsque
+    le nombre de segments augmente.
+    """
+
+    erreurs_python = []
+    erreurs_numpy = []
+
+    for n_test in valeur_n:
+
+        erreurs_python.append(
+            erreur_rectangle_python(p1, p2, p3, p4, a, b, n_test)
+        )
+
+        erreurs_numpy.append(
+            erreur_rectangle_numpy(p1, p2, p3, p4, a, b, n_test)
+        )
+
+        print(f"La valeur de n est de {n_test}")
+
     plt.figure()
-    plt.loglog(valeur_n, erreurs, 'o-', label='Erreur Rectangles')
-    plt.xlabel("Nombre de segments n")
+
+    plt.loglog(
+        valeur_n,
+        erreurs_python,
+        "o-",
+        label="Rectangle Python"
+    )
+
+    plt.loglog(
+        valeur_n,
+        erreurs_numpy,
+        "s-",
+        label="Rectangle NumPy"
+    )
+
+    plt.xlabel("Nombre de rectangles n")
     plt.ylabel("Erreur absolue")
     plt.title("Convergence de la méthode des rectangles")
+
     plt.grid(True)
     plt.legend()
+
     plt.show()
+
+
+# ==========================================================
+# 7. COMPARAISON DES TEMPS D'EXÉCUTION
+# ==========================================================
 
 def tracer_courbe_temps_execution(p1, p2, p3, p4, a, b, valeur_n):
+    """
+    Trace le temps d'exécution de la méthode des rectangles.
+
+    Pour chaque valeur de n, on mesure le temps moyen
+    d'exécution des versions Python et NumPy.
+    """
+
     temps_python_classique = []
     temps_numpy = []
-    temps_scipy = []
 
-    for i in valeur_n:
-        # Correction du bogue : utilisation de 'i' au lieu de 100
-        temps_python_classique.append(timeit.timeit(lambda: rectangle_python_classique(p1, p2, p3, p4, a, b, i), number=10) / 10)
-        temps_numpy.append(timeit.timeit(lambda: rectangle_numpy(p1, p2, p3, p4, a, b, i), number=10) / 10)
-        temps_scipy.append(timeit.timeit(lambda: quad(lambda x: calculer_valeur_y(p1, p2, p3, p4, x), a, b), number=10) / 10)
+    for n_test in valeur_n:
+
+        # Mesure du temps pour la version Python classique.
+        temps_python_classique.append(
+            timeit.timeit(
+                lambda: rectangle_python_classique(
+                    p1,
+                    p2,
+                    p3,
+                    p4,
+                    a,
+                    b,
+                    n_test
+                ),
+                number=10
+            ) / 10
+        )
+
+        # Mesure du temps pour la version NumPy.
+        temps_numpy.append(
+            timeit.timeit(
+                lambda: rectangle_numpy(
+                    p1,
+                    p2,
+                    p3,
+                    p4,
+                    a,
+                    b,
+                    n_test
+                ),
+                number=10
+            ) / 10
+        )
+
+        print(f"La valeur de n est de {n_test}")
 
     plt.figure()
-    plt.loglog(valeur_n, temps_python_classique, 'o-', label='Rectangle Python classique')
-    plt.loglog(valeur_n, temps_numpy, 's-', label='Rectangle NumPy')
-    plt.loglog(valeur_n, temps_scipy, '^-', label='SciPy (Quad)')
-    plt.xlabel("Nombre de segments n")
-    plt.ylabel("Temps d'exécution (s)")
+
+    plt.loglog(
+        valeur_n,
+        temps_python_classique,
+        "o-",
+        label="Rectangle Python"
+    )
+
+    plt.loglog(
+        valeur_n,
+        temps_numpy,
+        "s-",
+        label="Rectangle NumPy"
+    )
+
+    plt.xlabel("Nombre de rectangles n")
+    plt.ylabel("Temps d'exécution moyen (s)")
     plt.title("Temps d'exécution de la méthode des rectangles")
+
     plt.grid(True)
     plt.legend()
+
     plt.show()
 
-# ==========================================
-# 5. Bloc principal pour les tests locaux
-# ==========================================
+
+# ==========================================================
+# 8. PROGRAMME PRINCIPAL POUR TEST LOCAL
+# ==========================================================
+
 if __name__ == "__main__":
-    p1, p2, p3, p4 = 1, 2, 3, 4
-    a, b = 0, 10
-    n = 100
 
-    print(f"Valeur exacte : {solution_analytique(p1, p2, p3, p4, a, b)}")
-    print(f"Intégrale (Python) : {rectangle_python_classique(p1, p2, p3, p4, a, b, n)}")
-    print(f"Intégrale (NumPy) : {rectangle_numpy(p1, p2, p3, p4, a, b, n)}")
-    print(f"Erreur absolue (NumPy) : {erreur_integration(p1, p2, p3, p4, a, b, n)}")
+    # Paramètres du polynôme :
+    # f(x) = 1 + 2x + 3x² + 4x³
+    p1 = 1
+    p2 = 2
+    p3 = 3
+    p4 = 4
 
-    # Décommenter ces lignes pour tester les graphiques localement
-    # tracer_courbe_convergence_rectangle(p1, p2, p3, p4, a, b, [10, 50, 100, 500, 1000, 5000])
-    # tracer_courbe_temps_execution(p1, p2, p3, p4, a, b, [10, 50, 100, 500, 1000, 5000])
+    # Bornes d'intégration.
+    a = 0
+    b = 10
+
+    # Nombre de segments pour le test principal.
+    n = 10
+
+    # Valeurs utilisées pour les graphiques.
+    valeur_n = [10, 50, 100, 500, 1000, 5000]
+
+    # Calcul de la solution exacte.
+    resultat_exact = solution_analytique(p1, p2, p3, p4, a, b)
+
+    # Calculs numériques.
+    resultat_python = rectangle_python_classique(p1, p2, p3, p4, a, b, n)
+    resultat_numpy = rectangle_numpy(p1, p2, p3, p4, a, b, n)
+
+    # Affichage des résultats.
+    print("Solution analytique :", resultat_exact)
+    print("Méthode des rectangles Python :", resultat_python)
+    print("Erreur Python :", erreur_rectangle_python(p1, p2, p3, p4, a, b, n))
+    print("Méthode des rectangles NumPy :", resultat_numpy)
+    print("Erreur NumPy :", erreur_rectangle_numpy(p1, p2, p3, p4, a, b, n))
+
+    # Graphique de convergence.
+    tracer_courbe_convergence_rectangle(
+        p1,
+        p2,
+        p3,
+        p4,
+        a,
+        b,
+        valeur_n
+    )
+
+    # Graphique des temps d'exécution.
+    tracer_courbe_temps_execution(
+        p1,
+        p2,
+        p3,
+        p4,
+        a,
+        b,
+        valeur_n
+    )
