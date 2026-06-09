@@ -2,24 +2,15 @@
 # le temps d'exécution des différentes méthodes.
 import timeit
 
-# Bibliothèque permettant de manipuler
-# efficacement les tableaux numériques.
-import numpy as np
-
 # Bibliothèque utilisée pour tracer
 # les graphiques de convergence et de performance.
 import matplotlib.pyplot as plt
-
-# Fonction permettant de calculer une valeur
-# de référence très précise de l'intégrale.
-from scipy.integrate import quad
 
 # Importation des méthodes développées dans les autres fichiers.
 # Chaque méthode a été implémentée par un membre de l'équipe.
 from methode_rectangle import (
     rectangle_python_classique,
     rectangle_numpy,
-    calculer_valeur_y,
     solution_analytique as solution_exacte,
 )
 
@@ -58,23 +49,6 @@ n = 100
 # Valeurs de n utilisées pour l'étude de convergence.
 liste_n = [10, 50, 100, 500, 1000, 5000]
 
-
-# ==========================================================
-# CALCUL DE LA SOLUTION EXACTE
-# ==========================================================
-
-def solution_analytique(p1, p2, p3, p4, a, b):
-    """Calcule la solution exacte de l'intégrale avec la primitive analytique."""
-
-    def primitive(x):
-        return (
-            p1 * x
-            + (p2 / 2) * x**2
-            + (p3 / 3) * x**3
-            + (p4 / 4) * x**4
-        )
-
-    return primitive(b) - primitive(a)
 
 # ==========================================================
 # CALCUL DE L'ERREUR ABSOLUE
